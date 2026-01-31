@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CBTI - Sleep Fitness</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="container">
+        <!-- Welcome Screen -->
+        <div id="welcome-screen" class="screen active">
+            <div class="content">
+                <h1>CBTI</h1>
+                <p class="message">Hello! I think you could benefit from a Relaxation Training Session. Would you like to continue?</p>
+                <button id="continue-btn" class="btn btn-primary">Continue</button>
+            </div>
+        </div>
+
+        <!-- PMR Exercise Screen -->
+        <div id="pmr-screen" class="screen">
+            <button id="close-btn" class="close-btn" aria-label="Close">×</button>
+            <div class="content">
+                <h2>Progressive Muscle Relaxation</h2>
+                <div id="pmr-instruction" class="pmr-instruction">
+                    <p id="instruction-text" class="instruction-text">Get ready...</p>
+                    <div id="timer" class="timer"></div>
+                </div>
+                <div id="progress-indicator" class="progress-indicator">
+                    <span id="cycle-count">Cycle 1 of 2</span>
+                </div>
+                <div id="restart-container" class="restart-container" style="display: none;">
+                    <button id="restart-btn" class="btn btn-primary">RESTART</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
