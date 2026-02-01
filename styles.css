@@ -134,6 +134,16 @@ body {
 .completion-content {
     justify-content: center;
     align-items: center;
+    position: relative;
+}
+
+.completion-content .button-group {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    width: 100%;
+    padding: 0 24px 40px 24px;
 }
 
 .initial-prompt-content,
@@ -155,6 +165,105 @@ body {
 .initial-prompt-content .button-group,
 .schedule-content .button-group,
 .relaxation-content .button-group {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    width: 100%;
+    padding: 0 24px 40px 24px;
+}
+
+/* Charts container */
+.charts-container {
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+    width: 100%;
+    margin-top: 32px;
+}
+
+.chart-wrapper {
+    width: 100%;
+    height: 200px;
+    position: relative;
+}
+
+.chart-wrapper canvas {
+    max-height: 200px;
+}
+
+/* Good Evening screen */
+.good-evening-content {
+    justify-content: center;
+    align-items: center;
+    position: relative;
+}
+
+.good-evening-content .welcome-content {
+    flex: 0 0 auto;
+    width: 100%;
+    text-align: center;
+}
+
+.good-evening-content .button-group {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    width: 100%;
+    padding: 0 24px 40px 24px;
+}
+
+/* Sleep Window Adjustment screen */
+.sleep-window-content {
+    justify-content: center;
+    align-items: center;
+    position: relative;
+}
+
+.sleep-window-content .welcome-content {
+    flex: 0 0 auto;
+    width: 100%;
+    text-align: center;
+}
+
+.sleep-window-content .button-group {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    width: 100%;
+    padding: 0 24px 40px 24px;
+}
+
+.window-adjustment-display {
+    margin-top: 32px;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.window-line {
+    font-size: 1.25rem;
+    color: #ffffff;
+    font-weight: 500;
+    margin: 0;
+}
+
+/* Relaxation Info screen */
+.relaxation-info-content {
+    justify-content: center;
+    align-items: center;
+    position: relative;
+}
+
+.relaxation-info-content .welcome-content {
+    flex: 0 0 auto;
+    width: 100%;
+    text-align: center;
+}
+
+.relaxation-info-content .button-group {
     position: absolute;
     bottom: 0;
     left: 0;
@@ -420,6 +529,18 @@ body {
     background: #ffffff;
     color: #000000;
     border-color: #ffffff;
+}
+
+.day-counter-display {
+    cursor: default;
+    pointer-events: none;
+    opacity: 0.7;
+}
+
+.day-counter-display:hover {
+    background: transparent;
+    color: #b3b3b3;
+    border-color: #333;
 }
 
 .tense {
