@@ -11,20 +11,79 @@
 </head>
 <body>
     <div class="container">
-        <!-- Welcome Screen -->
-        <div id="welcome-screen" class="screen active">
-            <div class="content">
+        <!-- Initial Prompt Screen -->
+        <div id="initial-prompt-screen" class="screen active">
+            <div class="content initial-prompt-content">
                 <div class="welcome-content">
-                    <h1>You could benefit from a Relaxation Training Session.</h1>
-                    <p class="message">It'll take just a few minutes, and then you're on your way to a restful and recharging night of sleep.</p>
-                    <div class="time-indicator">
-                        <span class="clock-icon">🕐</span>
-                        <span class="time-text">3-5 minutes</span>
+                    <p class="prompt-main-text">You're making good progress on your sleep fitness. Ready to take it to the next level?</p>
+                    <p class="message">Introducing your personal Sleep Coach, who will take you through the Sleep Sprint Program to improve your sleep efficiency and get you to rest more quickly.</p>
+                    <p class="message">Would you like to participate in the Sleep Sprint Program and take your rest to the next level?</p>
+                    <div id="not-right-now-message" class="message" style="display: none; color: #b3b3b3; margin-top: 16px;">
+                        No problem, you can start anytime
                     </div>
                 </div>
                 <div class="button-group">
-                    <button id="continue-btn" class="btn btn-primary">Yes, start relaxation session</button>
-                    <button id="no-thanks-btn" class="btn btn-secondary">No thanks</button>
+                    <button id="yes-program-btn" class="btn btn-primary">Yes, let's do the program</button>
+                    <button id="not-right-now-btn" class="btn btn-secondary">Not right now</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Goals & Guidelines Screen -->
+        <div id="goals-guidelines-screen" class="screen">
+            <button id="back-goals-btn" class="back-btn" aria-label="Back">Back</button>
+            <div class="content">
+                <div class="welcome-content">
+                    <h1>Sleep Sprint Program: Goals and Guidelines</h1>
+                    <div class="sleep-score-display">
+                        <p class="message">Current average sleep score: <span class="score-value">72</span></p>
+                        <p class="message">Recommended target sleep score: <span class="score-value">88</span></p>
+                    </div>
+                    <div class="form-group">
+                        <label for="target-score-input" class="form-label">Target sleep score (72-100):</label>
+                        <input type="number" id="target-score-input" class="form-input" min="72" max="100" value="88" />
+                    </div>
+                    <div class="form-group">
+                        <label for="earliest-bedtime-input" class="form-label">Earliest Allowable Bedtime:</label>
+                        <input type="time" id="earliest-bedtime-input" class="form-input" />
+                    </div>
+                    <div class="form-group">
+                        <label for="latest-wakeup-input" class="form-label">Latest Allowable Wake-Up:</label>
+                        <input type="time" id="latest-wakeup-input" class="form-input" />
+                    </div>
+                </div>
+                <div class="button-group">
+                    <button id="continue-goals-btn" class="btn btn-primary">Continue</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Sleep Schedule Screen -->
+        <div id="sleep-schedule-screen" class="screen">
+            <button id="back-schedule-btn" class="back-btn" aria-label="Back">Back</button>
+            <div class="content schedule-content">
+                <div class="welcome-content">
+                    <h1>Your Sleep Schedule</h1>
+                    <p class="message">Based on your preferences, here's your personalized sleep schedule:</p>
+                    <div class="schedule-display">
+                        <p class="schedule-time">11:30 PM - 6:00 AM</p>
+                    </div>
+                </div>
+                <div class="button-group">
+                    <button id="lock-schedule-btn" class="btn btn-primary">Lock in my sleep schedule</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Relaxation Training Intro Screen -->
+        <div id="relaxation-intro-screen" class="screen">
+            <button id="back-relaxation-btn" class="back-btn" aria-label="Back">Back</button>
+            <div class="content relaxation-content">
+                <div class="welcome-content">
+                    <p class="prompt-main-text">Let's do a Relaxation Training Session to get you primed for bed.</p>
+                </div>
+                <div class="button-group">
+                    <button id="start-relaxation-btn" class="btn btn-primary">Start</button>
                 </div>
             </div>
         </div>
@@ -39,12 +98,24 @@
                     <div id="timer" class="timer"></div>
                 </div>
                 <div id="progress-indicator" class="progress-indicator">
-                    <span id="cycle-count">Cycle 1 of 2</span>
-                </div>
-                <div id="restart-container" class="restart-container" style="display: none;">
-                    <button id="restart-btn" class="btn btn-primary">RESTART</button>
+                    <span id="cycle-count">Cycle 1 of 1</span>
                 </div>
             </div>
+        </div>
+
+        <!-- Completion Screen -->
+        <div id="completion-screen" class="screen">
+            <div class="content completion-content">
+                <div class="welcome-content">
+                    <p class="prompt-main-text">That's it! Enjoy a restful night of sleep, and see you tomorrow for more sleep training.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Debug State Toggle (visible on all screens) -->
+        <div id="debug-toggle-container" class="debug-toggle-container">
+            <button id="debug-initial-prompt-btn" class="debug-btn">Initial Prompt</button>
+            <button id="debug-nightly-routine-btn" class="debug-btn">Nightly Routine</button>
         </div>
     </div>
 

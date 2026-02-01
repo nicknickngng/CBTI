@@ -1,11 +1,33 @@
-// DOM elements
-const welcomeScreen = document.getElementById('welcome-screen');
+// State management
+let debugState = 'initial-prompt'; // 'initial-prompt' or 'nightly-routine'
+let appState = 'initial-prompt-screen'; // Current screen ID
+
+// DOM elements - Screens
+const initialPromptScreen = document.getElementById('initial-prompt-screen');
+const goalsGuidelinesScreen = document.getElementById('goals-guidelines-screen');
+const sleepScheduleScreen = document.getElementById('sleep-schedule-screen');
+const relaxationIntroScreen = document.getElementById('relaxation-intro-screen');
 const pmrScreen = document.getElementById('pmr-screen');
-const continueBtn = document.getElementById('continue-btn');
-const noThanksBtn = document.getElementById('no-thanks-btn');
+const completionScreen = document.getElementById('completion-screen');
+
+// DOM elements - Buttons
+const yesProgramBtn = document.getElementById('yes-program-btn');
+const notRightNowBtn = document.getElementById('not-right-now-btn');
+const continueGoalsBtn = document.getElementById('continue-goals-btn');
+const lockScheduleBtn = document.getElementById('lock-schedule-btn');
+const startRelaxationBtn = document.getElementById('start-relaxation-btn');
+const backGoalsBtn = document.getElementById('back-goals-btn');
+const backScheduleBtn = document.getElementById('back-schedule-btn');
+const backRelaxationBtn = document.getElementById('back-relaxation-btn');
 const closeBtn = document.getElementById('close-btn');
-const restartBtn = document.getElementById('restart-btn');
-const restartContainer = document.getElementById('restart-container');
+const debugInitialPromptBtn = document.getElementById('debug-initial-prompt-btn');
+const debugNightlyRoutineBtn = document.getElementById('debug-nightly-routine-btn');
+
+// DOM elements - Other
+const notRightNowMessage = document.getElementById('not-right-now-message');
+const targetScoreInput = document.getElementById('target-score-input');
+const earliestBedtimeInput = document.getElementById('earliest-bedtime-input');
+const latestWakeupInput = document.getElementById('latest-wakeup-input');
 const instructionText = document.getElementById('instruction-text');
 const timer = document.getElementById('timer');
 const cycleCount = document.getElementById('cycle-count');
@@ -16,32 +38,113 @@ let timeRemaining = 0;
 let intervalId = null;
 
 // Constants
-const TENSE_DURATION = 4; // seconds
-const RELEASE_DURATION = 8; // seconds
-const TOTAL_CYCLES = 2;
+const TENSE_DURATION = 1; // seconds
+const RELEASE_DURATION = 2; // seconds
+const TOTAL_CYCLES = 1;
 
-// Initialize
-continueBtn.addEventListener('click', startPMR);
-noThanksBtn.addEventListener('click', handleNoThanks);
-closeBtn.addEventListener('click', returnToHomepage);
-restartBtn.addEventListener('click', returnToHomepage);
-
-function handleNoThanks() {
-    // Currently does nothing as requested
-    // Can be extended later if needed
+// Screen navigation function
+function showScreen(screenId) {
+    // Hide all screens
+    const allScreens = document.querySelectorAll('.screen');
+    allScreens.forEach(screen => screen.classList.remove('active'));
+    
+    // Show the requested screen
+    const targetScreen = document.getElementById(screenId);
+    if (targetScreen) {
+        targetScreen.classList.add('active');
+        appState = screenId;
+    }
 }
 
-function startPMR() {
-    // Switch to PMR screen
-    welcomeScreen.classList.remove('active');
-    pmrScreen.classList.add('active');
+// Debug state toggle handlers
+debugInitialPromptBtn.addEventListener('click', () => {
+    debugState = 'initial-prompt';
+    showScreen('initial-prompt-screen');
+    updateDebugButtons();
+});
+
+debugNightlyRoutineBtn.addEventListener('click', () => {
+    debugState = 'nightly-routine';
+    // TODO: Implement nightly routine starting screen
+    showScreen('initial-prompt-screen'); // Placeholder for now
+    updateDebugButtons();
+});
+
+function updateDebugButtons() {
+    if (debugState === 'initial-prompt') {
+        debugInitialPromptBtn.classList.add('active');
+        debugNightlyRoutineBtn.classList.remove('active');
+    } else {
+        debugInitialPromptBtn.classList.remove('active');
+        debugNightlyRoutineBtn.classList.add('active');
+    }
+}
+
+// Initial Prompt Screen handlers
+yesProgramBtn.addEventListener('click', () => {
+    showScreen('goals-guidelines-screen');
+});
+
+notRightNowBtn.addEventListener('click', () => {
+    notRightNowMessage.style.display = 'block';
+});
+
+// Goals & Guidelines Screen handlers
+backGoalsBtn.addEventListener('click', () => {
+    showScreen('initial-prompt-screen');
+});
+
+continueGoalsBtn.addEventListener('click', () => {
+    // Validate inputs
+    const targetScore = parseInt(targetScoreInput.value);
+    const earliestBedtime = earliestBedtimeInput.value;
+    const latestWakeup = latestWakeupInput.value;
     
-    // Reset state
+    if (isNaN(targetScore) || targetScore < 72 || targetScore > 100) {
+        alert('Please enter a valid target sleep score between 72 and 100.');
+        return;
+    }
+    
+    if (!earliestBedtime || !latestWakeup) {
+        alert('Please enter both bedtime and wake-up times.');
+        return;
+    }
+    
+    // Proceed to sleep schedule screen
+    showScreen('sleep-schedule-screen');
+});
+
+// Sleep Schedule Screen handlers
+backScheduleBtn.addEventListener('click', () => {
+    showScreen('goals-guidelines-screen');
+});
+
+lockScheduleBtn.addEventListener('click', () => {
+    showScreen('relaxation-intro-screen');
+});
+
+// Relaxation Intro Screen handlers
+backRelaxationBtn.addEventListener('click', () => {
+    showScreen('sleep-schedule-screen');
+});
+
+startRelaxationBtn.addEventListener('click', () => {
+    showScreen('pmr-screen');
+    // Reset PMR state and start
     currentCycle = 0;
-    
-    // Start first cycle
     startCycle();
-}
+});
+
+// PMR Screen handlers
+closeBtn.addEventListener('click', () => {
+    // Clear any running intervals
+    if (intervalId) {
+        clearInterval(intervalId);
+    }
+    // Return to initial prompt screen
+    showScreen('initial-prompt-screen');
+    resetPMR();
+});
 
 function startCycle() {
     currentCycle++;
@@ -86,7 +189,7 @@ function startReleasePhase() {
                 // Start next cycle
                 startCycle();
             } else {
-                // All cycles complete, return to welcome screen
+                // All cycles complete, navigate to completion screen
                 completePMR();
             }
         }
@@ -103,30 +206,18 @@ function completePMR() {
         clearInterval(intervalId);
     }
     
-    // Show completion message
-    instructionText.textContent = 'Exercise complete!';
-    instructionText.className = 'instruction-text';
-    timer.textContent = '';
-    
-    // Show RESTART button
-    restartContainer.style.display = 'block';
+    // Navigate to completion screen
+    showScreen('completion-screen');
+    resetPMR();
 }
 
-function returnToHomepage() {
-    // Clear any running intervals
-    if (intervalId) {
-        clearInterval(intervalId);
-    }
-    
-    // Switch screens
-    pmrScreen.classList.remove('active');
-    welcomeScreen.classList.add('active');
-    
-    // Reset for next time
+function resetPMR() {
     instructionText.textContent = 'Get ready...';
     instructionText.className = 'instruction-text';
     timer.textContent = '';
-    cycleCount.textContent = 'Cycle 1 of 2';
-    restartContainer.style.display = 'none';
+    cycleCount.textContent = 'Cycle 1 of 1';
     currentCycle = 0;
 }
+
+// Initialize
+updateDebugButtons();
