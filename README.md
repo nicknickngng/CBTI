@@ -4,6 +4,4 @@
 
 ## About
 
-This is the CBTI project repository.
-
-Test again, using Cursor sync.
+This is the CBTI project repository, created for the AI PM take-home assignment due February 2nd at 2pm ET.
