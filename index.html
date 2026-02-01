@@ -4,6 +4,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>CBTI - Sleep Fitness</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="styles.css">
 </head>
 <body>
@@ -11,9 +14,18 @@
         <!-- Welcome Screen -->
         <div id="welcome-screen" class="screen active">
             <div class="content">
-                <h1>CBTI</h1>
-                <p class="message">Hello! I think you could benefit from a Relaxation Training Session. Would you like to continue?</p>
-                <button id="continue-btn" class="btn btn-primary">Continue</button>
+                <div class="welcome-content">
+                    <h1>You could benefit from a Relaxation Training Session.</h1>
+                    <p class="message">It'll take just a few minutes, and then you're on your way to a restful and recharging night of sleep.</p>
+                    <div class="time-indicator">
+                        <span class="clock-icon">🕐</span>
+                        <span class="time-text">3-5 minutes</span>
+                    </div>
+                </div>
+                <div class="button-group">
+                    <button id="continue-btn" class="btn btn-primary">Yes, start relaxation session</button>
+                    <button id="no-thanks-btn" class="btn btn-secondary">No thanks</button>
+                </div>
             </div>
         </div>
 

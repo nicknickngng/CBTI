@@ -2,6 +2,7 @@
 const welcomeScreen = document.getElementById('welcome-screen');
 const pmrScreen = document.getElementById('pmr-screen');
 const continueBtn = document.getElementById('continue-btn');
+const noThanksBtn = document.getElementById('no-thanks-btn');
 const closeBtn = document.getElementById('close-btn');
 const restartBtn = document.getElementById('restart-btn');
 const restartContainer = document.getElementById('restart-container');
@@ -21,8 +22,14 @@ const TOTAL_CYCLES = 2;
 
 // Initialize
 continueBtn.addEventListener('click', startPMR);
+noThanksBtn.addEventListener('click', handleNoThanks);
 closeBtn.addEventListener('click', returnToHomepage);
 restartBtn.addEventListener('click', returnToHomepage);
+
+function handleNoThanks() {
+    // Currently does nothing as requested
+    // Can be extended later if needed
+}
 
 function startPMR() {
     // Switch to PMR screen
