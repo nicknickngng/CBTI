@@ -1,6 +1,6 @@
 // State management
-let debugState = 'initial-prompt'; // 'initial-prompt' or 'nightly-routine'
-let appState = 'initial-prompt-screen'; // Current screen ID
+let debugState = 'initial-notification'; // 'initial-prompt', 'nightly-routine', or 'initial-notification'
+let appState = 'initial-notification-screen'; // Current screen ID
 let dayCounter = 0; // Day counter for Nightly Routine (0-13)
 let previousBedtime = { hours: 23, minutes: 30 }; // Initial: 11:30 PM
 let previousWakeup = { hours: 6, minutes: 0 }; // Initial: 6:00 AM
@@ -19,6 +19,8 @@ const completionScreen = document.getElementById('completion-screen');
 const goodEveningScreen = document.getElementById('good-evening-screen');
 const sleepWindowScreen = document.getElementById('sleep-window-screen');
 const relaxationInfoScreen = document.getElementById('relaxation-info-screen');
+const initialNotificationScreen = document.getElementById('initial-notification-screen');
+const nightlyNotificationScreen = document.getElementById('nightly-notification-screen');
 
 // DOM elements - Buttons
 const yesProgramBtn = document.getElementById('yes-program-btn');
@@ -36,10 +38,18 @@ const backInfoBtn = document.getElementById('back-info-btn');
 const startNightlyRelaxationBtn = document.getElementById('start-nightly-relaxation-btn');
 const advanceNightBtn = document.getElementById('advance-night-btn');
 const closeBtn = document.getElementById('close-btn');
+const debugInitialNotificationBtn = document.getElementById('debug-initial-notification-btn');
 const debugInitialPromptBtn = document.getElementById('debug-initial-prompt-btn');
+const debugNightlyNotificationBtn = document.getElementById('debug-nightly-notification-btn');
 const debugNightlyRoutineBtn = document.getElementById('debug-nightly-routine-btn');
 const debugResetBtn = document.getElementById('debug-reset-btn');
 const dayCounterDisplay = document.getElementById('day-counter-display');
+const lockscreenTime = document.getElementById('lockscreen-time');
+const lockscreenDate = document.getElementById('lockscreen-date');
+const notificationBubble = document.getElementById('notification-bubble');
+const nightlyLockscreenTime = document.getElementById('nightly-lockscreen-time');
+const nightlyLockscreenDate = document.getElementById('nightly-lockscreen-date');
+const nightlyNotificationBubble = document.getElementById('nightly-notification-bubble');
 
 // DOM elements - Other
 const notRightNowMessage = document.getElementById('not-right-now-message');
@@ -88,10 +98,61 @@ function showScreen(screenId) {
     }
 }
 
+// Time and date formatting functions
+function formatTime12Hour() {
+    const now = new Date();
+    let hours = now.getHours();
+    const minutes = now.getMinutes();
+    // Convert to 12-hour format but don't show AM/PM (like iPhone lock screen)
+    hours = hours % 12;
+    hours = hours ? hours : 12; // 0 should be 12
+    const minutesStr = minutes.toString().padStart(2, '0');
+    return `${hours}:${minutesStr}`;
+}
+
+function formatDate() {
+    const now = new Date();
+    const days = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+    const months = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
+    const dayName = days[now.getDay()];
+    const day = now.getDate();
+    const monthName = months[now.getMonth()];
+    return `${dayName}, ${day} ${monthName}`;
+}
+
+function updateLockscreenTimeDate() {
+    if (lockscreenTime) {
+        lockscreenTime.textContent = formatTime12Hour();
+    }
+    if (lockscreenDate) {
+        lockscreenDate.textContent = formatDate();
+    }
+    if (nightlyLockscreenTime) {
+        nightlyLockscreenTime.textContent = formatTime12Hour();
+    }
+    if (nightlyLockscreenDate) {
+        nightlyLockscreenDate.textContent = formatDate();
+    }
+}
+
 // Debug state toggle handlers
+debugInitialNotificationBtn.addEventListener('click', () => {
+    debugState = 'initial-notification';
+    showScreen('initial-notification-screen');
+    updateLockscreenTimeDate();
+    updateDebugButtons();
+});
+
 debugInitialPromptBtn.addEventListener('click', () => {
     debugState = 'initial-prompt';
     showScreen('initial-prompt-screen');
+    updateDebugButtons();
+});
+
+debugNightlyNotificationBtn.addEventListener('click', () => {
+    debugState = 'nightly-notification';
+    showScreen('nightly-notification-screen');
+    updateLockscreenTimeDate();
     updateDebugButtons();
 });
 
@@ -125,13 +186,23 @@ debugResetBtn.addEventListener('click', () => {
 });
 
 function updateDebugButtons() {
-    if (debugState === 'initial-prompt') {
+    // Remove active class from all debug buttons
+    debugInitialNotificationBtn.classList.remove('active');
+    debugInitialPromptBtn.classList.remove('active');
+    debugNightlyNotificationBtn.classList.remove('active');
+    debugNightlyRoutineBtn.classList.remove('active');
+    
+    // Add active class to current state
+    if (debugState === 'initial-notification') {
+        debugInitialNotificationBtn.classList.add('active');
+    } else if (debugState === 'initial-prompt') {
         debugInitialPromptBtn.classList.add('active');
-        debugNightlyRoutineBtn.classList.remove('active');
-    } else {
-        debugInitialPromptBtn.classList.remove('active');
+    } else if (debugState === 'nightly-notification') {
+        debugNightlyNotificationBtn.classList.add('active');
+    } else if (debugState === 'nightly-routine') {
         debugNightlyRoutineBtn.classList.add('active');
     }
+    
     // Update day counter display
     if (dayCounterDisplay) {
         dayCounterDisplay.textContent = `Night ${dayCounter}`;
@@ -521,30 +592,59 @@ startNightlyRelaxationBtn.addEventListener('click', () => {
 // Advance to next night button handler
 advanceNightBtn.addEventListener('click', () => {
     if (debugState === 'initial-prompt') {
-        // Same as clicking Nightly Routine debug button, but increment counter
-        debugState = 'nightly-routine';
+        // Navigate to Nightly Notification
+        debugState = 'nightly-notification';
         dayCounter = 1; // Increment to 1 when first entering Nightly Routine
         previousBedtime = { hours: 23, minutes: 30 };
         previousWakeup = { hours: 6, minutes: 0 };
-        showScreen('good-evening-screen');
+        showScreen('nightly-notification-screen');
+        updateLockscreenTimeDate();
         updateDebugButtons();
-        if (seChart && solChart) {
-            updateCharts();
-        } else {
-            initializeCharts();
-        }
     } else if (debugState === 'nightly-routine') {
-        // Increment day counter and go back to Good Evening screen
+        // Increment day counter and navigate to Nightly Notification
         dayCounter++;
         // Ensure day counter doesn't exceed 13
         if (dayCounter > 13) {
             dayCounter = 13;
         }
-        updateDebugButtons(); // Update day counter display
-        showScreen('good-evening-screen');
-        updateCharts();
+        debugState = 'nightly-notification';
+        showScreen('nightly-notification-screen');
+        updateLockscreenTimeDate();
+        updateDebugButtons();
     }
 });
 
+// Notification bubble click handlers
+if (notificationBubble) {
+    notificationBubble.addEventListener('click', () => {
+        debugState = 'initial-prompt';
+        showScreen('initial-prompt-screen');
+        updateDebugButtons();
+    });
+}
+
+if (nightlyNotificationBubble) {
+    nightlyNotificationBubble.addEventListener('click', () => {
+        debugState = 'nightly-routine';
+        showScreen('good-evening-screen');
+        updateDebugButtons();
+        // Initialize or update charts
+        if (seChart && solChart) {
+            updateCharts();
+        } else {
+            initializeCharts();
+        }
+    });
+}
+
+// Update time every minute
+setInterval(() => {
+    if ((initialNotificationScreen && initialNotificationScreen.classList.contains('active')) ||
+        (nightlyNotificationScreen && nightlyNotificationScreen.classList.contains('active'))) {
+        updateLockscreenTimeDate();
+    }
+}, 60000);
+
 // Initialize
 updateDebugButtons();
+updateLockscreenTimeDate();

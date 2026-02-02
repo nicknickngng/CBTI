@@ -13,7 +13,7 @@
 <body>
     <div class="container">
         <!-- Initial Prompt Screen -->
-        <div id="initial-prompt-screen" class="screen active">
+        <div id="initial-prompt-screen" class="screen">
             <div class="content initial-prompt-content">
                 <div class="welcome-content">
                     <p class="prompt-main-text">You're making good progress on your sleep fitness. Ready to take it to the next level?</p>
@@ -116,6 +116,36 @@
             </div>
         </div>
 
+        <!-- Initial Notification Screen -->
+        <div id="initial-notification-screen" class="screen active">
+            <div class="lockscreen-content">
+                <div class="lockscreen-time" id="lockscreen-time">8:13</div>
+                <div class="lockscreen-date" id="lockscreen-date">Tuesday, 11 August</div>
+                <div class="notification-bubble" id="notification-bubble">
+                    <img src="assets/eight_logo.jpg" alt="Eight Sleep" class="notification-logo" />
+                    <div class="notification-content">
+                        <div class="notification-header">Your New Sleep Plan Is Here</div>
+                        <div class="notification-body">Your Pod has designed a custom plan to boost your Sleep Efficiency and help you fall asleep 20% faster. Tap to start your 14-day Sleep Sprint.</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Nightly Notification Screen -->
+        <div id="nightly-notification-screen" class="screen">
+            <div class="lockscreen-content">
+                <div class="lockscreen-time" id="nightly-lockscreen-time">8:13</div>
+                <div class="lockscreen-date" id="nightly-lockscreen-date">Tuesday, 11 August</div>
+                <div class="notification-bubble" id="nightly-notification-bubble">
+                    <img src="assets/eight_logo.jpg" alt="Eight Sleep" class="notification-logo" />
+                    <div class="notification-content">
+                        <div class="notification-header">Sleep Coach Checking In</div>
+                        <div class="notification-body">You fell asleep 8 minutes faster last night. Let's keep that momentum. Your haptic relaxation starts in 20 minutes.</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
         <!-- Good Evening Screen (Nightly Routine) -->
         <div id="good-evening-screen" class="screen">
             <div class="content good-evening-content">
@@ -168,7 +198,9 @@
 
         <!-- Debug State Toggle (visible on all screens) -->
         <div id="debug-toggle-container" class="debug-toggle-container">
+            <button id="debug-initial-notification-btn" class="debug-btn">Initial Notification</button>
             <button id="debug-initial-prompt-btn" class="debug-btn">Initial Prompt</button>
+            <button id="debug-nightly-notification-btn" class="debug-btn">Nightly Notification</button>
             <button id="debug-nightly-routine-btn" class="debug-btn">Nightly Routine</button>
             <button id="debug-reset-btn" class="debug-btn">Reset</button>
             <button id="day-counter-display" class="debug-btn day-counter-display" disabled>Night 0</button>
