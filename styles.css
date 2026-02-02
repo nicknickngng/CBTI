@@ -241,6 +241,19 @@ body {
     padding: 0 24px 40px 24px;
 }
 
+/* Summary screen */
+.summary-content {
+    justify-content: center;
+    align-items: center;
+    position: relative;
+}
+
+.summary-content .welcome-content {
+    flex: 0 0 auto;
+    width: 100%;
+    text-align: center;
+}
+
 .initial-prompt-content,
 .schedule-content,
 .relaxation-content {
@@ -343,6 +356,16 @@ body {
     color: #ffffff;
     font-weight: 500;
     margin: 0;
+}
+
+.window-line .old-time {
+    color: #b3b3b3;
+    font-weight: 400;
+}
+
+.window-line .new-time {
+    color: #ffffff;
+    font-weight: 700;
 }
 
 /* Relaxation Info screen */

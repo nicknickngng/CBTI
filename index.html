@@ -78,7 +78,7 @@
                     <div class="schedule-display">
                         <p class="schedule-time" id="calculated-schedule-time">Calculating...</p>
                     </div>
-                    <p class="message schedule-explanation">This sleep window will automatically adjust based on your sleep performance and biometric data each night.<br><br>Just check in with your Pod for nightly updates.</p>
+                    <p class="message schedule-explanation">While this might seem like less time spent asleep, it's actually a key step towards higher quality, deeper sleep. This sleep window will automatically adjust based on your sleep performance and biometric data taken each night.<br><br>Your Pod will wake you up using your preference of haptic cues, audio tones, and thermal control.<br><br>Just check in with your Pod for nightly updates.</p>
                 </div>
                 <div class="button-group">
                     <button id="lock-schedule-btn" class="btn btn-primary">Lock in my sleep schedule</button>
@@ -183,10 +183,14 @@
             <button id="back-window-btn" class="back-btn" aria-label="Back">Back</button>
             <div class="content sleep-window-content">
                 <div class="welcome-content">
-                    <p class="message">Good work so far – let's adjust the sleep window to improve your sleep quantity while maintaining sleep density/efficiency.</p>
+                    <p class="message">Great work so far. Based on your sleep performance, let's adjust the sleep window to improve your sleep quantity while maintaining sleep quality.</p>
                     <div class="window-adjustment-display">
-                        <p class="window-line" id="bedtime-adjustment"></p>
-                        <p class="window-line" id="wakeup-adjustment"></p>
+                        <p class="window-line" id="bedtime-adjustment">
+                            <span class="old-time"></span> → <span class="new-time"></span>
+                        </p>
+                        <p class="window-line" id="wakeup-adjustment">
+                            <span class="old-time"></span> → <span class="new-time"></span>
+                        </p>
                     </div>
                 </div>
                 <div class="button-group">
@@ -209,12 +213,27 @@
             </div>
         </div>
 
+        <!-- Summary Screen -->
+        <div id="summary-screen" class="screen">
+            <div class="content summary-content">
+                <div class="welcome-content">
+                    <p class="prompt-main-text">Sleep Sprint Program Summary</p>
+                    <p class="message">Congratulations! You've completed your first Sleep Sprint Program and unlocked deeper, more restful sleep.<br><br>By the numbers:</p>
+                    <p class="message">Improvement in Sleep Efficiency: <span id="se-improvement" class="metric-value">23%</span></p>
+                    <p class="message">Decrease in Sleep Onset Latency: <span id="sol-improvement" class="metric-value">23 min</span></p>
+                    <br>
+                    <p class="message">Sleep health is a lifelong journey. Keep up the good work.</p>
+                </div>
+            </div>
+        </div>
+
         <!-- Debug State Toggle (visible on all screens) -->
         <div id="debug-toggle-container" class="debug-toggle-container">
             <button id="debug-initial-notification-btn" class="debug-btn">Initial Notification</button>
             <button id="debug-initial-prompt-btn" class="debug-btn">Initial Prompt</button>
             <button id="debug-nightly-notification-btn" class="debug-btn">Nightly Notification</button>
             <button id="debug-nightly-routine-btn" class="debug-btn">Nightly Routine</button>
+            <button id="debug-summary-btn" class="debug-btn">Summary</button>
             <button id="debug-reset-btn" class="debug-btn">Reset</button>
             <button id="day-counter-display" class="debug-btn day-counter-display" disabled>Night 0</button>
         </div>

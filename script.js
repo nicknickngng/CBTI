@@ -25,6 +25,7 @@ const sleepWindowScreen = document.getElementById('sleep-window-screen');
 const relaxationInfoScreen = document.getElementById('relaxation-info-screen');
 const initialNotificationScreen = document.getElementById('initial-notification-screen');
 const nightlyNotificationScreen = document.getElementById('nightly-notification-screen');
+const summaryScreen = document.getElementById('summary-screen');
 
 // DOM elements - Buttons
 const yesProgramBtn = document.getElementById('yes-program-btn');
@@ -46,7 +47,10 @@ const debugInitialNotificationBtn = document.getElementById('debug-initial-notif
 const debugInitialPromptBtn = document.getElementById('debug-initial-prompt-btn');
 const debugNightlyNotificationBtn = document.getElementById('debug-nightly-notification-btn');
 const debugNightlyRoutineBtn = document.getElementById('debug-nightly-routine-btn');
+const debugSummaryBtn = document.getElementById('debug-summary-btn');
 const debugResetBtn = document.getElementById('debug-reset-btn');
+const seImprovementDisplay = document.getElementById('se-improvement');
+const solImprovementDisplay = document.getElementById('sol-improvement');
 const dayCounterDisplay = document.getElementById('day-counter-display');
 const lockscreenTime = document.getElementById('lockscreen-time');
 const lockscreenDate = document.getElementById('lockscreen-date');
@@ -186,6 +190,13 @@ debugNightlyRoutineBtn.addEventListener('click', () => {
     }
 });
 
+debugSummaryBtn.addEventListener('click', () => {
+    debugState = 'summary';
+    updateSummaryScreen();
+    showScreen('summary-screen');
+    updateDebugButtons();
+});
+
 debugResetBtn.addEventListener('click', () => {
     debugState = 'initial-notification';
     dayCounter = 0; // Reset day counter
@@ -207,6 +218,7 @@ function updateDebugButtons() {
     debugInitialPromptBtn.classList.remove('active');
     debugNightlyNotificationBtn.classList.remove('active');
     debugNightlyRoutineBtn.classList.remove('active');
+    debugSummaryBtn.classList.remove('active');
     
     // Add active class to current state
     if (debugState === 'initial-notification') {
@@ -217,6 +229,8 @@ function updateDebugButtons() {
         debugNightlyNotificationBtn.classList.add('active');
     } else if (debugState === 'nightly-routine') {
         debugNightlyRoutineBtn.classList.add('active');
+    } else if (debugState === 'summary') {
+        debugSummaryBtn.classList.add('active');
     }
     
     // Update day counter display
@@ -521,6 +535,28 @@ function generateDayLabels() {
     return labels;
 }
 
+// Calculate improvements for Summary screen
+function calculateImprovements() {
+    // Based on data generation: SE goes from 72% to 95%, SOL goes from 35min to 12min
+    const seImprovement = 95 - 72; // 23%
+    const solImprovement = 35 - 12; // 23 min
+    return {
+        seImprovement: seImprovement,
+        solImprovement: solImprovement
+    };
+}
+
+// Update Summary screen with calculated improvements
+function updateSummaryScreen() {
+    const improvements = calculateImprovements();
+    if (seImprovementDisplay) {
+        seImprovementDisplay.textContent = `${improvements.seImprovement}%`;
+    }
+    if (solImprovementDisplay) {
+        solImprovementDisplay.textContent = `${improvements.solImprovement} min`;
+    }
+}
+
 // Chart initialization
 // Register Chart.js annotations plugin
 // The plugin auto-registers when loaded, but we ensure it's available
@@ -789,8 +825,19 @@ function updateSleepWindowDisplay() {
     const adjustedBedtime = subtractMinutes(currentBedtime.hours, currentBedtime.minutes, 5);
     const adjustedWakeup = addMinutes(currentWakeup.hours, currentWakeup.minutes, 10);
     
-    bedtimeAdjustment.textContent = `${formatTime(currentBedtime.hours, currentBedtime.minutes)} → ${formatTime(adjustedBedtime.hours, adjustedBedtime.minutes)}`;
-    wakeupAdjustment.textContent = `${formatTime(currentWakeup.hours, currentWakeup.minutes)} → ${formatTime(adjustedWakeup.hours, adjustedWakeup.minutes)}`;
+    const bedtimeOldTime = bedtimeAdjustment.querySelector('.old-time');
+    const bedtimeNewTime = bedtimeAdjustment.querySelector('.new-time');
+    const wakeupOldTime = wakeupAdjustment.querySelector('.old-time');
+    const wakeupNewTime = wakeupAdjustment.querySelector('.new-time');
+    
+    if (bedtimeOldTime && bedtimeNewTime) {
+        bedtimeOldTime.textContent = formatTime(currentBedtime.hours, currentBedtime.minutes);
+        bedtimeNewTime.textContent = formatTime(adjustedBedtime.hours, adjustedBedtime.minutes);
+    }
+    if (wakeupOldTime && wakeupNewTime) {
+        wakeupOldTime.textContent = formatTime(currentWakeup.hours, currentWakeup.minutes);
+        wakeupNewTime.textContent = formatTime(adjustedWakeup.hours, adjustedWakeup.minutes);
+    }
 }
 
 // Nightly Routine Screen handlers
