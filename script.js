@@ -78,7 +78,7 @@ let intervalId = null;
 
 // Constants
 const TENSE_DURATION = 1; // seconds
-const RELEASE_DURATION = 2; // seconds
+const RELEASE_DURATION = 1; // seconds
 const TOTAL_CYCLES = 1;
 
 // Screen navigation function
@@ -892,16 +892,21 @@ advanceNightBtn.addEventListener('click', () => {
         updateLockscreenTimeDate();
         updateDebugButtons();
     } else if (debugState === 'nightly-routine') {
-        // Increment day counter and navigate to Nightly Notification
+        // Increment day counter
         dayCounter++;
-        // Ensure day counter doesn't exceed 13
-        if (dayCounter > 13) {
-            dayCounter = 13;
+        // After the 14th night (dayCounter = 14), go to Summary screen
+        if (dayCounter >= 14) {
+            debugState = 'summary';
+            updateSummaryScreen();
+            showScreen('summary-screen');
+            updateDebugButtons();
+        } else {
+            // Navigate to Nightly Notification for nights 1-13
+            debugState = 'nightly-notification';
+            showScreen('nightly-notification-screen');
+            updateLockscreenTimeDate();
+            updateDebugButtons();
         }
-        debugState = 'nightly-notification';
-        showScreen('nightly-notification-screen');
-        updateLockscreenTimeDate();
-        updateDebugButtons();
     }
 });
 
