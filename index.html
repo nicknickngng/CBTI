@@ -8,6 +8,7 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-annotation@3.0.1/dist/chartjs-plugin-annotation.min.js"></script>
     <link rel="stylesheet" href="styles.css">
 </head>
 <body>
@@ -17,14 +18,17 @@
             <div class="content initial-prompt-content">
                 <div class="welcome-content">
                     <p class="prompt-main-text">You're making good progress on your sleep fitness. Ready to take it to the next level?</p>
-                    <p class="message">Introducing your personal Sleep Coach, who will take you through the Sleep Sprint Program to improve your sleep efficiency and get you to rest more quickly.</p>
-                    <p class="message">Would you like to participate in the Sleep Sprint Program and take your rest to the next level?</p>
+                    <p class="message">As your personal sleep coach, the Pod will guide you through the Sleep Sprint Program to improve your sleep efficiency and get you to rest more quickly.</p>
+
+                    <p class="message">The Sleep Sprint Program works by quickly priming your body for sleep using nightly Relaxation Protocol exercises and a calculated Sleep Restriction program that is tailored to your biological sleep needs.</p>
+
+                    <p class="message">Would you like to start the Sleep Sprint Program and take your rest to the next level?</p>
                     <div id="not-right-now-message" class="message" style="display: none; color: #b3b3b3; margin-top: 16px;">
-                        No problem, you can start anytime
+                        No problem, you can start anytime.
                     </div>
                 </div>
                 <div class="button-group">
-                    <button id="yes-program-btn" class="btn btn-primary">Yes, let's do the program</button>
+                    <button id="yes-program-btn" class="btn btn-primary">Yes, let's do it!</button>
                     <button id="not-right-now-btn" class="btn btn-secondary">Not right now</button>
                 </div>
             </div>
@@ -35,15 +39,19 @@
             <button id="back-goals-btn" class="back-btn" aria-label="Back">Back</button>
             <div class="content">
                 <div class="welcome-content">
-                    <h1>Sleep Sprint Program: Goals and Guidelines</h1>
-                    <div class="sleep-score-display">
-                        <p class="message">Current average sleep score: <span class="score-value">72</span></p>
-                        <p class="message">Recommended target sleep score: <span class="score-value">88</span></p>
+                    <h1>Sleep Sprint Program Goals</h1>
+                    <h2 class="boundary-header">Here's what we can improve with your sleep.</h2>
+                    <div class="sleep-metrics-display">
+                        <div class="metric-item">
+                            <p class="message">Current Sleep Efficiency: <span class="metric-value">72%</span></p>
+                            <p class="message">Goal: <span class="goal-value">80-85%</span></p>
+                        </div>
+                        <div class="metric-item">
+                            <p class="message">Current Sleep Onset Latency: <span class="metric-value">35 min</span></p>
+                            <p class="message">Goal: <span class="goal-value">15-25 min</span></p>
+                        </div>
                     </div>
-                    <div class="form-group">
-                        <label for="target-score-input" class="form-label">Target sleep score (72-100):</label>
-                        <input type="number" id="target-score-input" class="form-input" min="72" max="100" value="88" />
-                    </div>
+                    <h2 class="boundary-header">Let's make sure that this Sleep Sprint Program works for your schedule and sleep needs.</h2>
                     <div class="form-group">
                         <label for="earliest-bedtime-input" class="form-label">Earliest Allowable Bedtime:</label>
                         <input type="time" id="earliest-bedtime-input" class="form-input" />
@@ -52,6 +60,7 @@
                         <label for="latest-wakeup-input" class="form-label">Latest Allowable Wake-Up:</label>
                         <input type="time" id="latest-wakeup-input" class="form-input" />
                     </div>
+                    <div id="sleep-duration-error" class="error-message" style="display: none;"></div>
                 </div>
                 <div class="button-group">
                     <button id="continue-goals-btn" class="btn btn-primary">Continue</button>
@@ -64,11 +73,12 @@
             <button id="back-schedule-btn" class="back-btn" aria-label="Back">Back</button>
             <div class="content schedule-content">
                 <div class="welcome-content">
-                    <h1>Your Sleep Schedule</h1>
-                    <p class="message">Based on your preferences, here's your personalized sleep schedule:</p>
+                    <h1>Your Baseline Sleep Schedule</h1>
+                    <p class="message">Based on your sleep performance and preferences, here's your personalized sleep schedule:</p>
                     <div class="schedule-display">
-                        <p class="schedule-time">11:30 PM - 6:00 AM</p>
+                        <p class="schedule-time" id="calculated-schedule-time">Calculating...</p>
                     </div>
+                    <p class="message schedule-explanation">This sleep window will automatically adjust based on your sleep performance and biometric data each night.<br><br>Just check in with your Pod for nightly updates.</p>
                 </div>
                 <div class="button-group">
                     <button id="lock-schedule-btn" class="btn btn-primary">Lock in my sleep schedule</button>
@@ -81,7 +91,8 @@
             <button id="back-relaxation-btn" class="back-btn" aria-label="Back">Back</button>
             <div class="content relaxation-content">
                 <div class="welcome-content">
-                    <p class="prompt-main-text">Let's do a Relaxation Training Session to get you primed for bed.</p>
+                    <p class="prompt-main-text">Let's quiet the mind. Your Relaxation Protocol starts now.</p>
+                    <p class="message">Your Eight Sleep Cover will provide tensing and relaxation cues using the built-in vibration motors and speakers.</p>
                 </div>
                 <div class="button-group">
                     <button id="start-relaxation-btn" class="btn btn-primary">Start</button>
@@ -108,7 +119,7 @@
         <div id="completion-screen" class="screen">
             <div class="content completion-content">
                 <div class="welcome-content">
-                    <p class="prompt-main-text">That's it! Enjoy a restful night of sleep, and see you tomorrow for more sleep training.</p>
+                    <p class="prompt-main-text">That's it!<br><br>Enjoy a restful night of sleep, and see you tomorrow for more sleep training.</p>
                 </div>
                 <div class="button-group">
                     <button id="advance-night-btn" class="btn btn-primary">Advance to next night</button>
@@ -125,7 +136,7 @@
                     <img src="assets/eight_logo.jpg" alt="Eight Sleep" class="notification-logo" />
                     <div class="notification-content">
                         <div class="notification-header">Your New Sleep Plan Is Here</div>
-                        <div class="notification-body">Your Pod has designed a custom plan to boost your Sleep Efficiency and help you fall asleep 20% faster. Tap to start your 14-day Sleep Sprint.</div>
+                        <div class="notification-body">Your Pod has designed a custom plan to boost your Sleep Efficiency and help you fall asleep 21% faster. Tap to start your 14-day Sleep Sprint.</div>
                     </div>
                 </div>
             </div>
@@ -151,6 +162,7 @@
             <div class="content good-evening-content">
                 <div class="welcome-content">
                     <p class="prompt-main-text">Good evening! Welcome back. Let's get you ready for bed.</p>
+                    <p class="message">Here's a quick look at your progress towards more restful sleep.</p>
                     <div class="charts-container">
                         <div class="chart-wrapper">
                             <canvas id="se-chart"></canvas>
@@ -188,7 +200,8 @@
             <button id="back-info-btn" class="back-btn" aria-label="Back">Back</button>
             <div class="content relaxation-info-content">
                 <div class="welcome-content">
-                    <p class="prompt-main-text">Based on your previous sleep biometric data, we'll tweak your Relaxation Training session to optimize tonight's sleep.</p>
+                    <p class="prompt-main-text">Based on your previous sleep biometric data, we'll tweak your Relaxation Protocol session to optimize tonight's sleep.</p>
+                    <p class="message">Your Eight Sleep Cover will provide tensing and relaxation cues using the built-in vibration motors and speakers.</p>
                 </div>
                 <div class="button-group">
                     <button id="start-nightly-relaxation-btn" class="btn btn-primary">Start</button>

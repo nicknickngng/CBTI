@@ -563,14 +563,46 @@ body {
     margin: 0;
 }
 
-/* Sleep score display */
-.sleep-score-display {
+/* Sleep metrics display */
+.sleep-metrics-display {
     margin: 24px 0;
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
 }
 
-.score-value {
+.metric-item {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.metric-value {
     color: #ffffff;
     font-weight: 600;
+}
+
+.goal-value {
+    color: #ffffff;
+    font-weight: 600;
+}
+
+.boundary-header {
+    font-size: 1.25rem;
+    color: #ffffff;
+    font-weight: 600;
+    margin: 32px 0 24px 0;
+    line-height: 1.4;
+}
+
+.error-message {
+    color: #e74c3c;
+    font-size: 0.9rem;
+    margin-top: 16px;
+    padding: 12px;
+    background: rgba(231, 76, 60, 0.1);
+    border-radius: 8px;
+    border: 1px solid rgba(231, 76, 60, 0.3);
 }
 
 /* Schedule display */
@@ -584,6 +616,14 @@ body {
     color: #ffffff;
     font-weight: 600;
     margin: 0;
+}
+
+.schedule-explanation {
+    margin-top: 24px;
+    text-align: center;
+    max-width: 500px;
+    margin-left: auto;
+    margin-right: auto;
 }
 
 /* Debug toggle container */

@@ -4,6 +4,10 @@ let appState = 'initial-notification-screen'; // Current screen ID
 let dayCounter = 0; // Day counter for Nightly Routine (0-13)
 let previousBedtime = { hours: 23, minutes: 30 }; // Initial: 11:30 PM
 let previousWakeup = { hours: 6, minutes: 0 }; // Initial: 6:00 AM
+let userEarliestBedtime = null; // Stored from Goals screen
+let userLatestWakeup = null; // Stored from Goals screen
+let lockedBedtime = { hours: 23, minutes: 30 }; // Calculated schedule from Initial Prompt
+let lockedWakeup = { hours: 6, minutes: 0 }; // Calculated schedule from Initial Prompt
 
 // Chart instances
 let seChart = null;
@@ -53,14 +57,15 @@ const nightlyNotificationBubble = document.getElementById('nightly-notification-
 
 // DOM elements - Other
 const notRightNowMessage = document.getElementById('not-right-now-message');
-const targetScoreInput = document.getElementById('target-score-input');
 const earliestBedtimeInput = document.getElementById('earliest-bedtime-input');
 const latestWakeupInput = document.getElementById('latest-wakeup-input');
+const sleepDurationError = document.getElementById('sleep-duration-error');
 const instructionText = document.getElementById('instruction-text');
 const timer = document.getElementById('timer');
 const cycleCount = document.getElementById('cycle-count');
 const bedtimeAdjustment = document.getElementById('bedtime-adjustment');
 const wakeupAdjustment = document.getElementById('wakeup-adjustment');
+const calculatedScheduleTime = document.getElementById('calculated-schedule-time');
 
 // PMR exercise state
 let currentCycle = 0;
@@ -161,9 +166,15 @@ debugNightlyRoutineBtn.addEventListener('click', () => {
     if (debugState !== 'nightly-routine') {
         debugState = 'nightly-routine';
         dayCounter = 1; // Set to 1 when entering Nightly Routine
-        // Reset sleep times to initial values
-        previousBedtime = { hours: 23, minutes: 30 };
-        previousWakeup = { hours: 6, minutes: 0 };
+        // Use locked schedule from Initial Prompt, or default if not set
+        if (lockedBedtime && lockedWakeup) {
+            previousBedtime = { hours: lockedBedtime.hours, minutes: lockedBedtime.minutes };
+            previousWakeup = { hours: lockedWakeup.hours, minutes: lockedWakeup.minutes };
+        } else {
+            // Fallback to default if no schedule was locked
+            previousBedtime = { hours: 23, minutes: 30 };
+            previousWakeup = { hours: 6, minutes: 0 };
+        }
         showScreen('good-evening-screen');
         updateDebugButtons();
         // Initialize or update charts
@@ -176,12 +187,17 @@ debugNightlyRoutineBtn.addEventListener('click', () => {
 });
 
 debugResetBtn.addEventListener('click', () => {
-    debugState = 'initial-prompt';
+    debugState = 'initial-notification';
     dayCounter = 0; // Reset day counter
     // Reset sleep times to initial values
     previousBedtime = { hours: 23, minutes: 30 };
     previousWakeup = { hours: 6, minutes: 0 };
-    showScreen('initial-prompt-screen');
+    lockedBedtime = { hours: 23, minutes: 30 };
+    lockedWakeup = { hours: 6, minutes: 0 };
+    userEarliestBedtime = null;
+    userLatestWakeup = null;
+    showScreen('initial-notification-screen');
+    updateLockscreenTimeDate();
     updateDebugButtons();
 });
 
@@ -223,20 +239,137 @@ backGoalsBtn.addEventListener('click', () => {
     showScreen('initial-prompt-screen');
 });
 
+// Sleep duration calculation function
+function calculateSleepDuration(bedtimeStr, wakeupStr) {
+    if (!bedtimeStr || !wakeupStr) {
+        return null;
+    }
+    
+    // Parse time strings (format: "HH:MM")
+    const [bedtimeHours, bedtimeMinutes] = bedtimeStr.split(':').map(Number);
+    const [wakeupHours, wakeupMinutes] = wakeupStr.split(':').map(Number);
+    
+    // Convert to total minutes
+    const bedtimeTotalMinutes = bedtimeHours * 60 + bedtimeMinutes;
+    let wakeupTotalMinutes = wakeupHours * 60 + wakeupMinutes;
+    
+    // If wake-up time is earlier than bedtime, it's the next day
+    if (wakeupTotalMinutes <= bedtimeTotalMinutes) {
+        wakeupTotalMinutes += 24 * 60; // Add 24 hours
+    }
+    
+    // Calculate duration in minutes, then convert to hours
+    const durationMinutes = wakeupTotalMinutes - bedtimeTotalMinutes;
+    const durationHours = durationMinutes / 60;
+    
+    return durationHours;
+}
+
+// Function to calculate proposed sleep schedule
+function calculateProposedSchedule(earliestBedtimeStr, latestWakeupStr) {
+    if (!earliestBedtimeStr || !latestWakeupStr) {
+        return null;
+    }
+    
+    // Parse time strings
+    const [earliestHours, earliestMinutes] = earliestBedtimeStr.split(':').map(Number);
+    const [latestHours, latestMinutes] = latestWakeupStr.split(':').map(Number);
+    
+    // Convert to total minutes
+    let earliestTotalMinutes = earliestHours * 60 + earliestMinutes;
+    let latestTotalMinutes = latestHours * 60 + latestMinutes;
+    
+    // Calculate proposed bedtime: earliest + 1hr 15min
+    let proposedBedtimeMinutes = earliestTotalMinutes + (1 * 60 + 15);
+    
+    // Calculate proposed wakeup: latest - 45min
+    let proposedWakeupMinutes = latestTotalMinutes - 45;
+    
+    // Handle day rollover for wakeup (if negative, it's previous day, so add 24 hours)
+    if (proposedWakeupMinutes < 0) {
+        proposedWakeupMinutes += 24 * 60;
+    }
+    
+    // Handle day rollover for bedtime (if >= 24 hours, subtract 24 hours)
+    if (proposedBedtimeMinutes >= 24 * 60) {
+        proposedBedtimeMinutes -= 24 * 60;
+    }
+    
+    // Calculate initial duration
+    let wakeupForDuration = proposedWakeupMinutes;
+    if (wakeupForDuration <= proposedBedtimeMinutes) {
+        wakeupForDuration += 24 * 60; // Next day
+    }
+    let durationHours = (wakeupForDuration - proposedBedtimeMinutes) / 60;
+    
+    // If duration < 5 hours, adjust bedtime earlier
+    if (durationHours < 5) {
+        const deficitHours = 5 - durationHours;
+        const deficitMinutes = deficitHours * 60;
+        proposedBedtimeMinutes -= deficitMinutes;
+        
+        // Handle negative bedtime (previous day)
+        if (proposedBedtimeMinutes < 0) {
+            proposedBedtimeMinutes += 24 * 60;
+        }
+    }
+    
+    // Convert back to hours and minutes
+    const proposedBedtimeHours = Math.floor(proposedBedtimeMinutes / 60) % 24;
+    const proposedBedtimeMins = proposedBedtimeMinutes % 60;
+    const proposedWakeupHours = Math.floor(proposedWakeupMinutes / 60) % 24;
+    const proposedWakeupMins = proposedWakeupMinutes % 60;
+    
+    return {
+        bedtime: { hours: proposedBedtimeHours, minutes: proposedBedtimeMins },
+        wakeup: { hours: proposedWakeupHours, minutes: proposedWakeupMins }
+    };
+}
+
 continueGoalsBtn.addEventListener('click', () => {
+    // Hide any previous error messages
+    if (sleepDurationError) {
+        sleepDurationError.style.display = 'none';
+    }
+    
     // Validate inputs
-    const targetScore = parseInt(targetScoreInput.value);
     const earliestBedtime = earliestBedtimeInput.value;
     const latestWakeup = latestWakeupInput.value;
-    
-    if (isNaN(targetScore) || targetScore < 72 || targetScore > 100) {
-        alert('Please enter a valid target sleep score between 72 and 100.');
-        return;
-    }
     
     if (!earliestBedtime || !latestWakeup) {
         alert('Please enter both bedtime and wake-up times.');
         return;
+    }
+    
+    // Calculate and validate sleep duration
+    const sleepDuration = calculateSleepDuration(earliestBedtime, latestWakeup);
+    
+    if (sleepDuration === null) {
+        alert('Please enter both bedtime and wake-up times.');
+        return;
+    }
+    
+    if (sleepDuration < 5 || sleepDuration > 12) {
+        // Show error message
+        if (sleepDurationError) {
+            sleepDurationError.textContent = `Sleep duration must be between 5 and 12 hours. Your current selection is ${sleepDuration.toFixed(1)} hours. Please adjust your bedtime or wake-up time.`;
+            sleepDurationError.style.display = 'block';
+        } else {
+            alert(`Sleep duration must be between 5 and 12 hours. Your current selection is ${sleepDuration.toFixed(1)} hours. Please adjust your bedtime or wake-up time.`);
+        }
+        return;
+    }
+    
+    // Store user inputs
+    userEarliestBedtime = earliestBedtime;
+    userLatestWakeup = latestWakeup;
+    
+    // Calculate and display proposed schedule
+    const proposedSchedule = calculateProposedSchedule(earliestBedtime, latestWakeup);
+    if (proposedSchedule && calculatedScheduleTime) {
+        const bedtimeStr = formatTime(proposedSchedule.bedtime.hours, proposedSchedule.bedtime.minutes);
+        const wakeupStr = formatTime(proposedSchedule.wakeup.hours, proposedSchedule.wakeup.minutes);
+        calculatedScheduleTime.textContent = `${bedtimeStr} - ${wakeupStr}`;
     }
     
     // Proceed to sleep schedule screen
@@ -249,6 +382,13 @@ backScheduleBtn.addEventListener('click', () => {
 });
 
 lockScheduleBtn.addEventListener('click', () => {
+    // Store the calculated schedule for use in Nightly Routine
+    const proposedSchedule = calculateProposedSchedule(userEarliestBedtime, userLatestWakeup);
+    if (proposedSchedule) {
+        // Store as time objects with hours and minutes
+        lockedBedtime = { hours: proposedSchedule.bedtime.hours, minutes: proposedSchedule.bedtime.minutes };
+        lockedWakeup = { hours: proposedSchedule.wakeup.hours, minutes: proposedSchedule.wakeup.minutes };
+    }
     showScreen('relaxation-intro-screen');
 });
 
@@ -382,6 +522,13 @@ function generateDayLabels() {
 }
 
 // Chart initialization
+// Register Chart.js annotations plugin
+// The plugin auto-registers when loaded, but we ensure it's available
+if (typeof Chart !== 'undefined') {
+    // Plugin should be auto-registered, but we can explicitly register if needed
+    // chartjs-plugin-annotation v3 auto-registers with Chart.js 4.x
+}
+
 function initializeCharts() {
     const seData = generateSEData();
     const solData = generateSOLData();
@@ -413,6 +560,37 @@ function initializeCharts() {
                             color: '#ffffff',
                             font: {
                                 family: "'TT Commons Pro', 'Inter', sans-serif"
+                            },
+                            generateLabels: function(chart) {
+                                const original = Chart.defaults.plugins.legend.labels.generateLabels;
+                                const labels = original.call(this, chart);
+                                // Add custom "Target Range" legend item
+                                labels.push({
+                                    text: 'Target Range',
+                                    fillStyle: 'rgba(0, 255, 0, 0.2)',
+                                    strokeStyle: 'rgba(0, 255, 0, 0.5)',
+                                    lineWidth: 1,
+                                    hidden: false,
+                                    index: labels.length,
+                                    datasetIndex: -1
+                                });
+                                return labels;
+                            }
+                        }
+                    },
+                    annotation: {
+                        annotations: {
+                            targetBand: {
+                                type: 'box',
+                                yMin: 80,
+                                yMax: 85,
+                                backgroundColor: 'rgba(0, 255, 0, 0.2)',
+                                borderColor: 'rgba(0, 255, 0, 0.5)',
+                                borderWidth: 1,
+                                xScaleID: 'x',
+                                yScaleID: 'y',
+                                xMin: 0,
+                                xMax: dayLabels.length - 1
                             }
                         }
                     }
@@ -474,6 +652,37 @@ function initializeCharts() {
                             color: '#ffffff',
                             font: {
                                 family: "'TT Commons Pro', 'Inter', sans-serif"
+                            },
+                            generateLabels: function(chart) {
+                                const original = Chart.defaults.plugins.legend.labels.generateLabels;
+                                const labels = original.call(this, chart);
+                                // Add custom "Target Range" legend item
+                                labels.push({
+                                    text: 'Target Range',
+                                    fillStyle: 'rgba(0, 255, 0, 0.2)',
+                                    strokeStyle: 'rgba(0, 255, 0, 0.5)',
+                                    lineWidth: 1,
+                                    hidden: false,
+                                    index: labels.length,
+                                    datasetIndex: -1
+                                });
+                                return labels;
+                            }
+                        }
+                    },
+                    annotation: {
+                        annotations: {
+                            targetBand: {
+                                type: 'box',
+                                yMin: 15,
+                                yMax: 25,
+                                backgroundColor: 'rgba(0, 255, 0, 0.2)',
+                                borderColor: 'rgba(0, 255, 0, 0.5)',
+                                borderWidth: 1,
+                                xScaleID: 'x',
+                                yScaleID: 'y',
+                                xMin: 0,
+                                xMax: dayLabels.length - 1
                             }
                         }
                     }
@@ -519,6 +728,16 @@ function updateCharts() {
         seChart.data.datasets[0].data = seData;
         solChart.data.labels = dayLabels;
         solChart.data.datasets[0].data = solData;
+        
+        // Update annotation xMax to span full width of current X-axis
+        const maxIndex = dayLabels.length - 1;
+        if (seChart.options.plugins?.annotation?.annotations?.targetBand) {
+            seChart.options.plugins.annotation.annotations.targetBand.xMax = maxIndex;
+        }
+        if (solChart.options.plugins?.annotation?.annotations?.targetBand) {
+            solChart.options.plugins.annotation.annotations.targetBand.xMax = maxIndex;
+        }
+        
         seChart.update();
         solChart.update();
     }
@@ -554,15 +773,33 @@ function addMinutes(hours, minutes, addMins) {
 }
 
 function updateSleepWindowDisplay() {
-    const adjustedBedtime = subtractMinutes(previousBedtime.hours, previousBedtime.minutes, 5);
-    const adjustedWakeup = addMinutes(previousWakeup.hours, previousWakeup.minutes, 10);
+    // Use locked schedule from Initial Prompt, or previous night's adjusted times
+    let currentBedtime, currentWakeup;
     
-    bedtimeAdjustment.textContent = `${formatTime(previousBedtime.hours, previousBedtime.minutes)} → ${formatTime(adjustedBedtime.hours, adjustedBedtime.minutes)}`;
-    wakeupAdjustment.textContent = `${formatTime(previousWakeup.hours, previousWakeup.minutes)} → ${formatTime(adjustedWakeup.hours, adjustedWakeup.minutes)}`;
+    if (dayCounter === 1) {
+        // First night of Nightly Routine - use locked schedule from Initial Prompt
+        currentBedtime = lockedBedtime;
+        currentWakeup = lockedWakeup;
+    } else {
+        // Subsequent nights - use previous night's adjusted times
+        currentBedtime = previousBedtime;
+        currentWakeup = previousWakeup;
+    }
+    
+    const adjustedBedtime = subtractMinutes(currentBedtime.hours, currentBedtime.minutes, 5);
+    const adjustedWakeup = addMinutes(currentWakeup.hours, currentWakeup.minutes, 10);
+    
+    bedtimeAdjustment.textContent = `${formatTime(currentBedtime.hours, currentBedtime.minutes)} → ${formatTime(adjustedBedtime.hours, adjustedBedtime.minutes)}`;
+    wakeupAdjustment.textContent = `${formatTime(currentWakeup.hours, currentWakeup.minutes)} → ${formatTime(adjustedWakeup.hours, adjustedWakeup.minutes)}`;
 }
 
 // Nightly Routine Screen handlers
 getReadyBtn.addEventListener('click', () => {
+    // Initialize previous times for first night of Nightly Routine
+    if (dayCounter === 1) {
+        previousBedtime = lockedBedtime;
+        previousWakeup = lockedWakeup;
+    }
     updateSleepWindowDisplay();
     showScreen('sleep-window-screen');
 });
@@ -595,8 +832,15 @@ advanceNightBtn.addEventListener('click', () => {
         // Navigate to Nightly Notification
         debugState = 'nightly-notification';
         dayCounter = 1; // Increment to 1 when first entering Nightly Routine
-        previousBedtime = { hours: 23, minutes: 30 };
-        previousWakeup = { hours: 6, minutes: 0 };
+        // Use locked schedule from Initial Prompt, or default if not set
+        if (lockedBedtime && lockedWakeup) {
+            previousBedtime = { hours: lockedBedtime.hours, minutes: lockedBedtime.minutes };
+            previousWakeup = { hours: lockedWakeup.hours, minutes: lockedWakeup.minutes };
+        } else {
+            // Fallback to default if no schedule was locked
+            previousBedtime = { hours: 23, minutes: 30 };
+            previousWakeup = { hours: 6, minutes: 0 };
+        }
         showScreen('nightly-notification-screen');
         updateLockscreenTimeDate();
         updateDebugButtons();
