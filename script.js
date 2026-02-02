@@ -77,9 +77,9 @@ let timeRemaining = 0;
 let intervalId = null;
 
 // Constants
-const TENSE_DURATION = 1; // seconds
-const RELEASE_DURATION = 1; // seconds
-const TOTAL_CYCLES = 1;
+const TENSE_DURATION = 4; // seconds
+const RELEASE_DURATION = 6; // seconds
+const TOTAL_CYCLES = 2;
 
 // Screen navigation function
 function showScreen(screenId) {
